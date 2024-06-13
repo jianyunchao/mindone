@@ -16,7 +16,7 @@ from mindspore.common.initializer import Normal
 from mindspore.ops import operations as P
 
 
-class LayerNorm(nn.LayerNorm):
+class LayerNorm(nn.extend.LayerNorm):
     r"""Implementation That Supports Fp16 Inputs But Fp32 Gains Biases.
 
     Args:

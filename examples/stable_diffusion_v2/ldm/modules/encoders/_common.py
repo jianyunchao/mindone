@@ -4,12 +4,12 @@ import mindspore.ops as ops
 from mindspore import Tensor
 
 
-class LayerNorm(nn.LayerNorm):
+class LayerNorm(nn.extend.LayerNorm):
     """Subclass torch's LayerNorm to handle fp16."""
 
     def __init__(self, *args, **kwargs):
-        if "epsilon" not in kwargs:
-            kwargs["epsilon"] = 1e-5  # use 1e-5 epsilon by default same torch.nn.LayerNorm
+        if "eps" not in kwargs:
+            kwargs["eps"] = 1e-5  # use 1e-5 epsilon by default same torch.nn.LayerNorm
         super().__init__(*args, **kwargs)
 
     def construct(self, x: Tensor):

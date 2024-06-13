@@ -150,7 +150,7 @@ class ParallelTrainOneStepWithLossScaleCell(TrainOneStepWithLossScaleCell):
             self.alloc_status = ops.NPUAllocFloatStatus()
             self.get_status = ops.NPUGetFloatStatus()
             self.clear_before_grad = ops.NPUClearFloatStatus()
-            self.reshape = ops.Reshape()
+            self.reshape = ops.reshape
 
     def construct(self, *args):
         if self.enabling_pipeline:

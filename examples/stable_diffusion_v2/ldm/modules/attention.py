@@ -422,19 +422,19 @@ class BasicTransformerBlock(nn.Cell):
                 fa_max_head_dim=fa_max_head_dim,
             )  # is self-attn if context is none
         self.norm1 = (
-            nn.LayerNorm([dim], epsilon=1e-05).to_float(ms.float32)
+            nn.extend.LayerNorm([dim], eps=1e-05).to_float(ms.float32)
             if upcast_attn
-            else nn.LayerNorm([dim], epsilon=1e-05).to_float(dtype)
+            else nn.extend.LayerNorm([dim], eps=1e-05).to_float(dtype)
         )
         self.norm2 = (
-            nn.LayerNorm([dim], epsilon=1e-05).to_float(ms.float32)
+            nn.extend.LayerNorm([dim], eps=1e-05).to_float(ms.float32)
             if upcast_attn
-            else nn.LayerNorm([dim], epsilon=1e-05).to_float(dtype)
+            else nn.extend.LayerNorm([dim], eps=1e-05).to_float(dtype)
         )
         self.norm3 = (
-            nn.LayerNorm([dim], epsilon=1e-05).to_float(ms.float32)
+            nn.extend.LayerNorm([dim], eps=1e-05).to_float(ms.float32)
             if upcast_attn
-            else nn.LayerNorm([dim], epsilon=1e-05).to_float(dtype)
+            else nn.extend.LayerNorm([dim], eps=1e-05).to_float(dtype)
         )
         self.checkpoint = checkpoint
 
@@ -514,7 +514,7 @@ class SpatialTransformer(nn.Cell):
             self.proj_out = zero_module(nn.Dense(in_channels, inner_dim).to_float(dtype))
 
         self.use_linear = use_linear
-        self.reshape = ops.Reshape()
+        self.reshape = ops.reshape
         self.transpose = ops.Transpose()
 
     def construct(self, x, emb=None, context=None):

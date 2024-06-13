@@ -75,9 +75,9 @@ class ResidualAttentionBlock(nn.Cell):
         super(ResidualAttentionBlock, self).__init__()
         self.attn = AttentionWithMask(d_model, n_head, attn_mask, dtype=dtype)
         self.ln_1 = (
-            LayerNorm([d_model], epsilon=epsilon).to_float(ms.float32)
+            LayerNorm([d_model], eps=epsilon).to_float(ms.float32)
             if upcast_attn
-            else LayerNorm([d_model], epsilon=epsilon)
+            else LayerNorm([d_model], eps=epsilon)
         )
         self.c_fc = nn.Dense(d_model, d_model * 4).to_float(dtype)
 
@@ -92,9 +92,9 @@ class ResidualAttentionBlock(nn.Cell):
         self.c_proj = nn.Dense(d_model * 4, d_model).to_float(dtype)
         self.mlp = nn.SequentialCell([self.c_fc, self.gelu, self.c_proj])
         self.ln_2 = (
-            LayerNorm([d_model], epsilon=epsilon).to_float(ms.float32)
+            LayerNorm([d_model], eps=epsilon).to_float(ms.float32)
             if upcast_attn
-            else LayerNorm([d_model], epsilon=epsilon)
+            else LayerNorm([d_model], eps=epsilon)
         )
 
     def construct(self, x):
@@ -151,7 +151,7 @@ class TextEncoder(nn.Cell):
         self.layers = layers
         self.vocab_size = vocab_size
         self.embedding_table = Parameter(initializer(TruncatedNormal(0.02), [vocab_size, width], dtype=self.dtype))
-        self.gather = ops.Gather()
+        self.gather = ops.extend.gather
         self.reshape = ops.Reshape()
         self.cast = ops.Cast()
 
@@ -159,9 +159,9 @@ class TextEncoder(nn.Cell):
             initializer(TruncatedNormal(0.01), [context_length, width], dtype=self.dtype)
         )
         self.ln_final = (
-            LayerNorm([self.width], epsilon=epsilon).to_float(ms.float32)
+            LayerNorm([self.width], eps=epsilon).to_float(ms.float32)
             if upcast_attn
-            else LayerNorm([self.width], epsilon=epsilon)
+            else LayerNorm([self.width], eps=epsilon)
         )
         self.transformer_layer = Transformer(
             width,
@@ -182,7 +182,7 @@ class TextEncoder(nn.Cell):
     def construct(self, text):
         bsz, ctx_len = text.shape
         flatten_id = text.flatten()
-        gather_result = self.gather(self.embedding_table, flatten_id, 0)
+        gather_result = self.gather(self.embedding_table, 0, flatten_id)
 
         x = self.reshape(gather_result, (bsz, ctx_len, -1))
         x = x + self.positional_embedding
@@ -208,22 +208,22 @@ class OpenCLIPResidualAttentionBlock(nn.Cell):
         super().__init__()
         self.dtype = dtype
         self.ln_1 = (
-            LayerNorm((d_model,), epsilon=epsilon).to_float(ms.float32)
+            LayerNorm((d_model,), eps=epsilon).to_float(ms.float32)
             if upcast_attn
-            else LayerNorm((d_model,), epsilon=epsilon)
+            else LayerNorm((d_model,), eps=epsilon)
         )
         self.attn = MultiheadAttention(d_model, n_head, dtype=dtype)
         if is_cross_attention:
             self.ln_1_kv = (
-                LayerNorm((d_model,), epsilon=epsilon).to_float(ms.float32)
+                LayerNorm((d_model,), eps=epsilon).to_float(ms.float32)
                 if upcast_attn
-                else LayerNorm((d_model,), epsilon=epsilon)
+                else LayerNorm((d_model,), eps=epsilon)
             )
 
         self.ln_2 = (
-            LayerNorm([d_model], epsilon=epsilon).to_float(ms.float32)
+            LayerNorm([d_model], eps=epsilon).to_float(ms.float32)
             if upcast_attn
-            else LayerNorm([d_model], epsilon=epsilon)
+            else LayerNorm([d_model], eps=epsilon)
         )
         mlp_width = int(d_model * mlp_ratio)
         self.mlp = nn.SequentialCell(
@@ -289,7 +289,7 @@ class OpenClipTextEncoder(nn.Cell):
         self.positional_embedding = Parameter(
             initializer(TruncatedNormal(0.01), [context_length, width], dtype=self.dtype)
         )
-        self.ln_final = nn.LayerNorm((self.width,), epsilon=epsilon).to_float(ms.float32)
+        self.ln_final = nn.LayerNorm((self.width,), eps=epsilon).to_float(ms.float32)
         self.attn_mask = ms.Tensor(self.build_attntion_mask(context_length), dtype=self.dtype)
 
     @staticmethod

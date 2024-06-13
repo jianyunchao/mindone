@@ -67,9 +67,9 @@ class AttentionBlock(nn.Cell):
         self.num_heads = num_heads
 
         # layers
-        self.norm1 = nn.LayerNorm((dim,))
+        self.norm1 = nn.extend.LayerNorm((dim,))
         self.attn = SelfAttention(dim, num_heads)
-        self.norm2 = nn.LayerNorm((dim,))
+        self.norm2 = nn.extend.LayerNorm((dim,))
         self.mlp = nn.SequentialCell(
             collections.OrderedDict(
                 [
@@ -130,7 +130,7 @@ class VisionTransformer(nn.Cell):
             collections.OrderedDict([(str(i), AttentionBlock(dim, num_heads)) for i in range(num_layers)])
         )
 
-        self.norm = nn.LayerNorm((dim,))
+        self.norm = nn.extend.LayerNorm((dim,))
 
         # head
         self.head = nn.Dense(dim, out_dim)
