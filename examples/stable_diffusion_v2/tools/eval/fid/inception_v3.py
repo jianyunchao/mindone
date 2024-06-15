@@ -12,6 +12,8 @@ from mindspore.ops import operations as P
 
 from .utils import load_model
 
+from ldm.modules.conv2d import Conv2d
+
 __all__ = [
     "InceptionV3_FID",
     "inception_v3_fid",
@@ -31,7 +33,7 @@ class BasicConv2d(nn.Cell):
 
     def __init__(self, in_channel, out_channel, kernel_size, stride=1, pad_mode="same", padding=0, has_bias=False):
         super(BasicConv2d, self).__init__()
-        self.conv = nn.Conv2d(
+        self.conv = Conv2d(
             in_channel,
             out_channel,
             kernel_size=kernel_size,
@@ -41,7 +43,7 @@ class BasicConv2d(nn.Cell):
             weight_init=XavierUniform(),
             has_bias=has_bias,
         )
-        self.bn = nn.BatchNorm2d(out_channel, epsilon=0.001, momentum=0.9997)
+        self.bn = nn.BatchNorm2d(out_channel, eps=0.001, momentum=0.9997)
         self.relu = nn.ReLU()
 
     def construct(self, x):
@@ -292,8 +294,8 @@ class AuxLogits(nn.Cell):
     def __init__(self, in_channels, num_classes=10):
         super(AuxLogits, self).__init__()
         self.avg_pool = nn.AvgPool2d(5, stride=3, pad_mode="valid")
-        self.conv2d_0 = nn.Conv2d(in_channels, 128, kernel_size=1)
-        self.conv2d_1 = nn.Conv2d(128, 768, kernel_size=5, pad_mode="valid")
+        self.conv2d_0 = Conv2d(in_channels, 128, kernel_size=1)
+        self.conv2d_1 = Conv2d(128, 768, kernel_size=5, pad_mode="valid")
         self.flatten = P.Flatten()
         self.fc = nn.Dense(in_channels, num_classes)
 

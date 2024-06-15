@@ -15,6 +15,8 @@ from mindspore import dtype as mstype
 from mindspore.common.initializer import Normal
 from mindspore.ops import operations as P
 
+from ldm.modules.conv2d import Conv2d
+
 
 class LayerNorm(nn.extend.LayerNorm):
     r"""Implementation That Supports Fp16 Inputs But Fp32 Gains Biases.
@@ -131,7 +133,7 @@ class VisionTransformer(nn.Cell):
         hidden_act: str,
     ):
         super(VisionTransformer, self).__init__()
-        self.conv1 = nn.Conv2d(
+        self.conv1 = nConv2d(
             in_channels=3, out_channels=width, kernel_size=patch_size, stride=patch_size, has_bias=False
         ).to_float(dtype)
 

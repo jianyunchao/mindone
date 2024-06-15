@@ -24,6 +24,8 @@ import mindspore.numpy as msnp
 from mindspore import nn, ops
 from mindspore.common.initializer import initializer
 
+from ldm.modules.conv2d import Conv2d
+
 try:
     from mindspore.nn.layer.flash_attention import FlashAttention
 
@@ -100,7 +102,7 @@ def zero_module(module):
 
 
 def Normalize(in_channels):
-    return nn.GroupNorm(num_groups=32, num_channels=in_channels, epsilon=1e-6, affine=True).to_float(ms.float32)
+    return nn.GroupNorm(num_groups=32, num_channels=in_channels, eps=1e-6, affine=True).to_float(ms.float32)
 
 
 class LinearAttention(nn.Cell):
@@ -108,8 +110,8 @@ class LinearAttention(nn.Cell):
         super().__init__()
         self.heads = heads
         hidden_dim = dim_head * heads
-        self.to_qkv = nn.Conv2d(dim, hidden_dim * 3, 1, has_bias=False, pad_mode="pad")
-        self.to_out = nn.Conv2d(hidden_dim, dim, 1, has_bias=True, pad_mode="pad")
+        self.to_qkv = Conv2d(dim, hidden_dim * 3, 1, has_bias=False, pad_mode="pad")
+        self.to_out = Conv2d(hidden_dim, dim, 1, has_bias=True, pad_mode="pad")
 
 
 class CrossAttention(nn.Cell):
@@ -478,7 +480,7 @@ class SpatialTransformer(nn.Cell):
         self.norm = Normalize(in_channels)
 
         if not use_linear:
-            self.proj_in = nn.Conv2d(
+            self.proj_in = Conv2d(
                 in_channels, inner_dim, kernel_size=1, stride=1, padding=0, has_bias=True, pad_mode="pad"
             ).to_float(dtype)
         else:
@@ -506,7 +508,7 @@ class SpatialTransformer(nn.Cell):
 
         if not use_linear:
             self.proj_out = zero_module(
-                nn.Conv2d(
+                Conv2d(
                     inner_dim, in_channels, kernel_size=1, stride=1, padding=0, has_bias=True, pad_mode="pad"
                 ).to_float(self.dtype)
             )

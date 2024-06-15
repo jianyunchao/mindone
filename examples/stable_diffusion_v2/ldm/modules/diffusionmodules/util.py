@@ -19,6 +19,7 @@ import mindspore.nn as nn
 import mindspore.ops as ops
 from mindspore.common.initializer import initializer
 
+from ldm.modules.conv2d import Conv2d
 
 class Identity(nn.Cell):
     def __init__(self):
@@ -42,7 +43,7 @@ class conv_nd(nn.Cell):
         if dims == 1:
             self.conv = nn.Conv1d(*args, **kwargs)
         elif dims == 2:
-            self.conv = nn.Conv2d(*args, **kwargs)
+            self.conv = Conv2d(*args, **kwargs)
         elif dims == 3:
             self.conv = nn.Conv3d(*args, **kwargs)
         else:

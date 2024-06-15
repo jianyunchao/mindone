@@ -17,12 +17,14 @@ import mindspore.nn as nn
 from mindspore.ops import operations as P
 
 
+from ldm.modules.conv2d import Conv2d
+
 def conv1x1(in_planes, out_planes, stride=1):
-    return nn.Conv2d(in_planes, out_planes, kernel_size=1, stride=stride, weight_init="xavier_uniform")
+    return Conv2d(in_planes, out_planes, kernel_size=1, stride=stride, weight_init="xavier_uniform")
 
 
 def conv3x3(in_planes, out_planes, stride=1, dilation=1, padding=1):
-    return nn.Conv2d(
+    return Conv2d(
         in_planes,
         out_planes,
         kernel_size=3,
@@ -40,7 +42,7 @@ class Resnet(nn.Cell):
     def __init__(self, block, block_num, output_stride, use_batch_statistics=True):
         super(Resnet, self).__init__()
         self.inplanes = 64
-        self.conv1 = nn.Conv2d(
+        self.conv1 = Conv2d(
             3, self.inplanes, kernel_size=7, stride=2, pad_mode="pad", padding=3, weight_init="xavier_uniform"
         )
         self.bn1 = nn.BatchNorm2d(self.inplanes, use_batch_statistics=use_batch_statistics)
@@ -174,9 +176,9 @@ class ASPPConv(nn.Cell):
     def __init__(self, in_channels, out_channels, atrous_rate=1, use_batch_statistics=True):
         super(ASPPConv, self).__init__()
         if atrous_rate == 1:
-            conv = nn.Conv2d(in_channels, out_channels, kernel_size=1, has_bias=False, weight_init="xavier_uniform")
+            conv = Conv2d(in_channels, out_channels, kernel_size=1, has_bias=False, weight_init="xavier_uniform")
         else:
-            conv = nn.Conv2d(
+            conv = Conv2d(
                 in_channels,
                 out_channels,
                 kernel_size=3,
@@ -201,7 +203,7 @@ class ASPPPooling(nn.Cell):
         super(ASPPPooling, self).__init__()
         self.conv = nn.SequentialCell(
             [
-                nn.Conv2d(in_channels, out_channels, kernel_size=1, weight_init="xavier_uniform"),
+                Conv2d(in_channels, out_channels, kernel_size=1, weight_init="xavier_uniform"),
                 nn.BatchNorm2d(out_channels, use_batch_statistics=use_batch_statistics),
                 nn.ReLU(),
             ]
@@ -229,7 +231,7 @@ class ASPP(nn.Cell):
         self.aspp3 = ASPPConv(in_channels, out_channels, atrous_rates[2], use_batch_statistics=use_batch_statistics)
         self.aspp4 = ASPPConv(in_channels, out_channels, atrous_rates[3], use_batch_statistics=use_batch_statistics)
         self.aspp_pooling = ASPPPooling(in_channels, out_channels, use_batch_statistics=use_batch_statistics)
-        self.conv1 = nn.Conv2d(
+        self.conv1 = Conv2d(
             out_channels * (len(atrous_rates) + 1), out_channels, kernel_size=1, weight_init="xavier_uniform"
         )
         self.bn1 = nn.BatchNorm2d(out_channels, use_batch_statistics=use_batch_statistics)
@@ -269,7 +271,7 @@ class DeepLabV3Plus(nn.Cell):
         )
         self.aspp = ASPP([1, 6, 12, 18], phase, 2048, num_classes, use_batch_statistics=use_batch_statistics)
         self.shape = P.Shape()
-        self.conv2 = nn.Conv2d(256, 48, kernel_size=1, weight_init="xavier_uniform")
+        self.conv2 = Conv2d(256, 48, kernel_size=1, weight_init="xavier_uniform")
         self.bn2 = nn.BatchNorm2d(48, use_batch_statistics=use_batch_statistics)
         self.relu = nn.ReLU()
         self.concat = P.Concat(axis=1)

@@ -151,7 +151,7 @@ class TextEncoder(nn.Cell):
         self.layers = layers
         self.vocab_size = vocab_size
         self.embedding_table = Parameter(initializer(TruncatedNormal(0.02), [vocab_size, width], dtype=self.dtype))
-        self.gather = ops.extend.gather
+        self.gather = ops.Gather()
         self.reshape = ops.reshape
         self.cast = ops.Cast()
 

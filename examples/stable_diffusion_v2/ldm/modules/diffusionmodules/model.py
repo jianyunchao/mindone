@@ -21,6 +21,8 @@ import mindspore as ms
 import mindspore.nn as nn
 from mindspore import ops
 
+from ldm.modules.conv2d import Conv2d
+
 _logger = logging.getLogger(__name__)
 
 
@@ -34,7 +36,7 @@ def nonlinearity(x, upcast=False):
 
 
 def Normalize(in_channels, num_groups=32):
-    return nn.GroupNorm(num_groups=num_groups, num_channels=in_channels, epsilon=1e-6, affine=True).to_float(ms.float32)
+    return nn.GroupNorm(num_groups=num_groups, num_channels=in_channels, eps=1e-6, affine=True).to_float(ms.float32)
 
 
 class Upsample(nn.Cell):
@@ -43,7 +45,7 @@ class Upsample(nn.Cell):
         self.dtype = dtype
         self.with_conv = with_conv
         if self.with_conv:
-            self.conv = nn.Conv2d(
+            self.conv = Conv2d(
                 in_channels, in_channels, kernel_size=3, stride=1, pad_mode="pad", padding=1, has_bias=True
             ).to_float(self.dtype)
 
@@ -64,7 +66,7 @@ class Downsample(nn.Cell):
         self.with_conv = with_conv
         if self.with_conv:
             # no asymmetric padding in torch conv, must do it ourselves
-            self.conv = nn.Conv2d(
+            self.conv = Conv2d(
                 in_channels, in_channels, kernel_size=3, stride=2, pad_mode="valid", padding=0, has_bias=True
             ).to_float(self.dtype)
 
@@ -100,7 +102,7 @@ class ResnetBlock(nn.Cell):
         self.upcast_sigmoid = upcast_sigmoid
 
         self.norm1 = Normalize(in_channels)
-        self.conv1 = nn.Conv2d(
+        self.conv1 = Conv2d(
             in_channels, out_channels, kernel_size=3, stride=1, pad_mode="pad", padding=1, has_bias=True
         ).to_float(dtype)
         if temb_channels > 0:
@@ -110,16 +112,16 @@ class ResnetBlock(nn.Cell):
             self.dropout = nn.Dropout(1.0 - dropout)
         else:
             self.dropout = nn.Dropout(p=dropout)
-        self.conv2 = nn.Conv2d(
+        self.conv2 = Conv2d(
             out_channels, out_channels, kernel_size=3, stride=1, pad_mode="pad", padding=1, has_bias=True
         ).to_float(dtype)
         if self.in_channels != self.out_channels:
             if self.use_conv_shortcut:
-                self.conv_shortcut = nn.Conv2d(
+                self.conv_shortcut = Conv2d(
                     in_channels, out_channels, kernel_size=3, stride=1, pad_mode="pad", padding=1, has_bias=True
                 ).to_float(dtype)
             else:
-                self.nin_shortcut = nn.Conv2d(
+                self.nin_shortcut = Conv2d(
                     in_channels, out_channels, kernel_size=1, stride=1, pad_mode="valid", has_bias=True
                 ).to_float(dtype)
 
@@ -153,16 +155,16 @@ class AttnBlock(nn.Cell):
         self.dtype = dtype
         self.bmm = ops.BatchMatMul()
         self.norm = Normalize(in_channels)
-        self.q = nn.Conv2d(in_channels, in_channels, kernel_size=1, stride=1, pad_mode="valid", has_bias=True).to_float(
+        self.q = Conv2d(in_channels, in_channels, kernel_size=1, stride=1, pad_mode="valid", has_bias=True).to_float(
             dtype
         )
-        self.k = nn.Conv2d(in_channels, in_channels, kernel_size=1, stride=1, pad_mode="valid", has_bias=True).to_float(
+        self.k = Conv2d(in_channels, in_channels, kernel_size=1, stride=1, pad_mode="valid", has_bias=True).to_float(
             dtype
         )
-        self.v = nn.Conv2d(in_channels, in_channels, kernel_size=1, stride=1, pad_mode="valid", has_bias=True).to_float(
+        self.v = Conv2d(in_channels, in_channels, kernel_size=1, stride=1, pad_mode="valid", has_bias=True).to_float(
             dtype
         )
-        self.proj_out = nn.Conv2d(
+        self.proj_out = Conv2d(
             in_channels, in_channels, kernel_size=1, stride=1, pad_mode="valid", has_bias=True
         ).to_float(dtype)
 
@@ -235,7 +237,7 @@ class Encoder(nn.Cell):
         self.upcast_sigmoid = (upcast_sigmoid,)
 
         # downsampling
-        self.conv_in = nn.Conv2d(
+        self.conv_in = Conv2d(
             in_channels, self.ch, kernel_size=3, stride=1, pad_mode="pad", padding=1, has_bias=True
         ).to_float(self.dtype)
 
@@ -295,7 +297,7 @@ class Encoder(nn.Cell):
 
         # end
         self.norm_out = Normalize(block_in)
-        self.conv_out = nn.Conv2d(
+        self.conv_out = Conv2d(
             block_in,
             2 * z_channels if double_z else z_channels,
             kernel_size=3,
@@ -377,7 +379,7 @@ class Decoder(nn.Cell):
         _logger.debug("Working with z of shape {} = {} dimensions.".format(self.z_shape, np.prod(self.z_shape)))
 
         # z to block_in
-        self.conv_in = nn.Conv2d(
+        self.conv_in = Conv2d(
             z_channels, block_in, kernel_size=3, stride=1, pad_mode="pad", padding=1, has_bias=True
         ).to_float(self.dtype)
 
@@ -426,7 +428,7 @@ class Decoder(nn.Cell):
 
         # end
         self.norm_out = Normalize(block_in)
-        self.conv_out = nn.Conv2d(
+        self.conv_out = Conv2d(
             block_in, out_ch, kernel_size=3, stride=1, pad_mode="pad", padding=1, has_bias=True
         ).to_float(self.dtype)
 

@@ -9,6 +9,8 @@ from mindspore import dtype as mstype
 
 from ._common import LayerNorm, QuickGELU
 
+from ldm.modules.conv2d import Conv2d
+
 
 class Bottleneck(nn.Cell):
     expansion = 4
@@ -18,17 +20,17 @@ class Bottleneck(nn.Cell):
         self.dtype = dtype
 
         # all conv layers have stride 1. an avgpool is performed after the second convolution when stride > 1
-        self.conv1 = nn.Conv2d(inplanes, planes, 1, has_bias=False).to_float(self.dtype)
+        self.conv1 = Conv2d(inplanes, planes, 1, has_bias=False).to_float(self.dtype)
         self.bn1 = nn.BatchNorm2d(planes).to_float(self.dtype)
         self.relu1 = nn.ReLU()
 
-        self.conv2 = nn.Conv2d(planes, planes, 3, padding=1, pad_mode="pad", has_bias=False).to_float(self.dtype)
+        self.conv2 = Conv2d(planes, planes, 3, padding=1, pad_mode="pad", has_bias=False).to_float(self.dtype)
         self.bn2 = nn.BatchNorm2d(planes).to_float(self.dtype)
         self.relu2 = nn.ReLU()
 
         self.avgpool = nn.AvgPool2d(stride) if stride > 1 else nn.Identity()
 
-        self.conv3 = nn.Conv2d(planes, planes * self.expansion, 1, has_bias=False).to_float(self.dtype)
+        self.conv3 = Conv2d(planes, planes * self.expansion, 1, has_bias=False).to_float(self.dtype)
         self.bn3 = nn.BatchNorm2d(planes * self.expansion).to_float(self.dtype)
         self.relu3 = nn.ReLU()
 
@@ -43,7 +45,7 @@ class Bottleneck(nn.Cell):
                         ("-1", nn.AvgPool2d(stride)),
                         (
                             "0",
-                            nn.Conv2d(inplanes, planes * self.expansion, 1, stride=1, has_bias=False).to_float(
+                            Conv2d(inplanes, planes * self.expansion, 1, stride=1, has_bias=False).to_float(
                                 self.dtype
                             ),
                         ),
@@ -127,17 +129,17 @@ class ModifiedResNet(nn.Cell):
         self.input_resolution = input_resolution
 
         # the 3-layer stem
-        self.conv1 = nn.Conv2d(
+        self.conv1 = Conv2d(
             3, width // 2, kernel_size=3, stride=2, pad_mode="pad", padding=1, has_bias=False
         ).to_float(self.dtype)
         self.bn1 = nn.BatchNorm2d(width // 2).to_float(self.dtype)
         self.relu1 = nn.ReLU()
-        self.conv2 = nn.Conv2d(
+        self.conv2 = Conv2d(
             width // 2, width // 2, kernel_size=3, pad_mode="pad", padding=1, has_bias=False
         ).to_float(self.dtype)
         self.bn2 = nn.BatchNorm2d().to_float(self.dtype)
         self.relu2 = nn.ReLU()
-        self.conv3 = nn.Conv2d(width // 2, width, kernel_size=3, pad_mode="pad", padding=1, has_bias=False).to_float(
+        self.conv3 = Conv2d(width // 2, width, kernel_size=3, pad_mode="pad", padding=1, has_bias=False).to_float(
             self.dtype
         )
         self.bn3 = nn.BatchNorm2d(width).to_float(self.dtype)
@@ -321,7 +323,7 @@ class VisionTransformer(nn.Cell):
         self.dtype = dtype
         self.input_resolution = input_resolution
         self.output_dim = output_dim
-        self.conv1 = nn.Conv2d(
+        self.conv1 = Conv2d(
             in_channels=3, out_channels=width, kernel_size=patch_size, stride=patch_size, pad_mode="pad", has_bias=False
         ).to_float(self.dtype)
 

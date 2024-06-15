@@ -3,6 +3,8 @@ from collections import OrderedDict
 import mindspore.nn as nn
 import mindspore.ops as ops
 
+from ldm.modules.conv2d import Conv2d
+
 
 def make_layers(block, no_relu_layers):
     layers = []
@@ -11,7 +13,7 @@ def make_layers(block, no_relu_layers):
             layer = nn.MaxPool2d(kernel_size=v[0], stride=v[1], padding=v[2])
             layers.append((layer_name, layer))
         else:
-            conv2d = nn.Conv2d(
+            conv2d = Conv2d(
                 in_channels=v[0],
                 out_channels=v[1],
                 kernel_size=v[2],
