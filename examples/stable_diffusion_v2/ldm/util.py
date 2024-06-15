@@ -101,7 +101,7 @@ def get_obj_from_str(string, reload=False):
 
 def extract_into_tensor(a, t, x_shape):
     b = t.shape[0]
-    out = ops.GatherD()(a, -1, t)
+    out = ops.extend.gather(a, -1, t)
     return out.reshape(b, *((1,) * (len(x_shape) - 1)))
 
 

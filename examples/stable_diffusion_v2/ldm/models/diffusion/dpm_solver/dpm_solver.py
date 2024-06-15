@@ -19,7 +19,7 @@ from ldm.util import is_old_ms_version
 from tqdm import tqdm
 
 import mindspore as ms
-from mindspore import ops
+from mindspore import ops, mint
 
 _logger = logging.getLogger(__name__)
 
@@ -368,9 +368,9 @@ def model_wrapper(
                     c_in = ops.concat([unconditional_condition, condition])
                 noise_output = noise_pred_fn(x_in, t_in, cond=c_in)
                 if is_old_ms_version():
-                    noise_uncond, noise = ops.split(noise_output, output_num=2)
+                    noise_uncond, noise = mint.split(noise_output, output_num=2)
                 else:
-                    noise_uncond, noise = ops.split(noise_output, split_size_or_sections=noise_output.shape[0] // 2)
+                    noise_uncond, noise = mint.split(noise_output, split_size_or_sections=noise_output.shape[0] // 2)
                 return noise_uncond + guidance_scale * (noise - noise_uncond)
 
     assert model_type in ["noise", "x_start", "v", "score"]
@@ -1481,7 +1481,7 @@ def interpolate_fn(x, xp, yp):
     """
     expandd = ops.ExpandDims()
     equal = ops.Equal()
-    gatherd = ops.GatherD()
+    gatherd = ops.extend.gather
     cast = ops.Cast()
 
     N, K = x.shape[0], xp.shape[1]

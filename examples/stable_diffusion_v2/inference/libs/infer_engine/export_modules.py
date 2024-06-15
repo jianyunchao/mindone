@@ -1,5 +1,5 @@
 import mindspore as ms
-from mindspore import nn, ops
+from mindspore import nn, ops, mint
 
 
 class DataPrepare(nn.Cell):
@@ -61,7 +61,7 @@ class PredictNoise(nn.Cell):
         x_in = ops.concat([x] * 2, axis=0)
         t_in = ops.concat([t_continuous] * 2, axis=0)
         noise_pred = self.unet(x_in, t_in, c_crossattn=c_crossattn)
-        noise_pred_uncond, noise_pred_text = ops.split(noise_pred, split_size_or_sections=noise_pred.shape[0] // 2)
+        noise_pred_uncond, noise_pred_text = mint.split(noise_pred, split_size_or_sections=noise_pred.shape[0] // 2)
         noise_pred = noise_pred_uncond + guidance_scale * (noise_pred_text - noise_pred_uncond)
         if self.guidance_rescale > 0:
             noise_pred = self.rescale_noise_cfg(noise_pred, noise_pred_text)
@@ -201,7 +201,7 @@ class InpaintPredictNoise(PredictNoise):
         t_in = ops.concat([t_continuous] * 2, axis=0)
         c_concat = ops.concat([c_concat] * 2, axis=0)
         noise_pred = self.unet(x_in, t_in, c_concat=c_concat, c_crossattn=c_crossattn)
-        noise_pred_uncond, noise_pred_text = ops.split(noise_pred, split_size_or_sections=noise_pred.shape[0] // 2)
+        noise_pred_uncond, noise_pred_text = mint.split(noise_pred, split_size_or_sections=noise_pred.shape[0] // 2)
         noise_pred = noise_pred_uncond + guidance_scale * (noise_pred_text - noise_pred_uncond)
         if self.guidance_rescale > 0:
             noise_pred = self.rescale_noise_cfg(noise_pred, noise_pred_text)

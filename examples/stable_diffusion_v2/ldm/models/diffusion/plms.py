@@ -19,7 +19,7 @@ from ldm.util import is_old_ms_version
 from tqdm import tqdm
 
 import mindspore as ms
-from mindspore import ops
+from mindspore import ops, mint
 
 _logger = logging.getLogger(__name__)
 
@@ -262,9 +262,9 @@ class PLMSSampler:
                     ldm_output = self.model.apply_model(x_in, t_in, c_in)
 
                 if is_old_ms_version():
-                    e_t_uncond, e_t = ops.split(ldm_output, axis=0, output_num=2)
+                    e_t_uncond, e_t = mint.split(ldm_output, axis=0, output_num=2)
                 else:
-                    e_t_uncond, e_t = ops.split(ldm_output, split_size_or_sections=ldm_output.shape[0] // 2, axis=0)
+                    e_t_uncond, e_t = mint.split(ldm_output, split_size_or_sections=ldm_output.shape[0] // 2, axis=0)
 
                 e_t = e_t_uncond + unconditional_guidance_scale * (e_t - e_t_uncond)
 

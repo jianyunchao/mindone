@@ -122,6 +122,6 @@ def build_optimizer(
     if name.lower() in ["sgd", "momentum"]:
         optimizer = OptimCls(group_params, learning_rate=lr, momentum=0.9)
     else:
-        optimizer = OptimCls(group_params, learning_rate=lr, beta1=betas[0], beta2=betas[1], eps=eps)
+        optimizer = OptimCls(group_params, learning_rate=lr, beta1=betas[0], beta2=betas[1], epsilon=eps)
 
     return optimizer

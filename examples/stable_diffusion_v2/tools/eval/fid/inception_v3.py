@@ -41,7 +41,7 @@ class BasicConv2d(nn.Cell):
             weight_init=XavierUniform(),
             has_bias=has_bias,
         )
-        self.bn = nn.BatchNorm2d(out_channel, eps=0.001, momentum=0.9997)
+        self.bn = nn.BatchNorm2d(out_channel, epsilon=0.001, momentum=0.9997)
         self.relu = nn.ReLU()
 
     def construct(self, x):

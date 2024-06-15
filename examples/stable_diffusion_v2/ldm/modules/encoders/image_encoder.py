@@ -246,7 +246,7 @@ class ResidualAttentionBlock(nn.Cell):
 
         self.dtype = dtype
         self.attn = MultiheadAttention(d_model, n_head, dtype)
-        self.ln_1 = LayerNorm((d_model,), eps=epsilon)
+        self.ln_1 = LayerNorm((d_model,), epsilon=epsilon)
         self.mlp = nn.SequentialCell(
             OrderedDict(
                 [
@@ -256,7 +256,7 @@ class ResidualAttentionBlock(nn.Cell):
                 ]
             )
         )
-        self.ln_2 = LayerNorm((d_model,), eps=epsilon)
+        self.ln_2 = LayerNorm((d_model,), epsilon=epsilon)
         self.attn_mask = attn_mask
 
     def attention(self, x: Tensor):
@@ -330,13 +330,13 @@ class VisionTransformer(nn.Cell):
         self.positional_embedding = Parameter(
             scale * ms.numpy.randn((input_resolution // patch_size) ** 2 + 1, width, dtype=ms.float32)
         )
-        self.ln_pre = LayerNorm((width,), eps=epsilon)
+        self.ln_pre = LayerNorm((width,), epsilon=epsilon)
 
         self.transformer = Transformer(
             width, layers, heads, epsilon=epsilon, use_quick_gelu=use_quick_gelu, mlp_ratio=mlp_ratio, dtype=self.dtype
         )
 
-        self.ln_post = LayerNorm((width,), eps=epsilon)
+        self.ln_post = LayerNorm((width,), epsilon=epsilon)
         self.proj = Parameter(scale * ms.numpy.randn(width, output_dim, dtype=ms.float32))
 
     def construct(self, x: Tensor):

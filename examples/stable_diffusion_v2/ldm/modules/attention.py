@@ -100,7 +100,7 @@ def zero_module(module):
 
 
 def Normalize(in_channels):
-    return nn.GroupNorm(num_groups=32, num_channels=in_channels, eps=1e-6, affine=True).to_float(ms.float32)
+    return nn.GroupNorm(num_groups=32, num_channels=in_channels, epsilon=1e-6, affine=True).to_float(ms.float32)
 
 
 class LinearAttention(nn.Cell):
@@ -422,19 +422,19 @@ class BasicTransformerBlock(nn.Cell):
                 fa_max_head_dim=fa_max_head_dim,
             )  # is self-attn if context is none
         self.norm1 = (
-            nn.extend.LayerNorm([dim], eps=1e-05).to_float(ms.float32)
+            nn.extend.LayerNorm([dim], epsilon=1e-05).to_float(ms.float32)
             if upcast_attn
-            else nn.extend.LayerNorm([dim], eps=1e-05).to_float(dtype)
+            else nn.extend.LayerNorm([dim], epsilon=1e-05).to_float(dtype)
         )
         self.norm2 = (
-            nn.extend.LayerNorm([dim], eps=1e-05).to_float(ms.float32)
+            nn.extend.LayerNorm([dim], epsilon=1e-05).to_float(ms.float32)
             if upcast_attn
-            else nn.extend.LayerNorm([dim], eps=1e-05).to_float(dtype)
+            else nn.extend.LayerNorm([dim], epsilon=1e-05).to_float(dtype)
         )
         self.norm3 = (
-            nn.extend.LayerNorm([dim], eps=1e-05).to_float(ms.float32)
+            nn.extend.LayerNorm([dim], epsilon=1e-05).to_float(ms.float32)
             if upcast_attn
-            else nn.extend.LayerNorm([dim], eps=1e-05).to_float(dtype)
+            else nn.extend.LayerNorm([dim], epsilon=1e-05).to_float(dtype)
         )
         self.checkpoint = checkpoint
 

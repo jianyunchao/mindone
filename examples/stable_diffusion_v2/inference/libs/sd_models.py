@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from tqdm import tqdm
 
 import mindspore as ms
-from mindspore import ops
+from mindspore import ops, mint
 
 
 class SDInfer(ABC):
@@ -79,7 +79,7 @@ class SDInfer(ABC):
         if c_concat is not None:
             c_concat = ops.concat([c_concat] * 2, axis=0)
         noise_pred = self.unet(x_in, t_in, c_concat=c_concat, c_crossattn=c_crossattn)
-        noise_pred_uncond, noise_pred_text = ops.split(noise_pred, split_size_or_sections=noise_pred.shape[0] // 2)
+        noise_pred_uncond, noise_pred_text = mint.split(noise_pred, split_size_or_sections=noise_pred.shape[0] // 2)
         noise_pred = noise_pred_uncond + guidance_scale * (noise_pred_text - noise_pred_uncond)
         if self.guidance_rescale > 0:
             noise_pred = self.rescale_noise_cfg(noise_pred, noise_pred_text)
@@ -240,7 +240,7 @@ class SDControlNet(SDInfer):
         c_concat = ops.concat([c_concat] * 2, axis=0)
 
         noise_pred = self.unet(x_in, t_in, c_concat=c_concat, c_crossattn=c_crossattn, control=c_concat)
-        noise_pred_uncond, noise_pred_text = ops.split(noise_pred, split_size_or_sections=noise_pred.shape[0] // 2)
+        noise_pred_uncond, noise_pred_text = mint.split(noise_pred, split_size_or_sections=noise_pred.shape[0] // 2)
         noise_pred = noise_pred_uncond + guidance_scale * (noise_pred_text - noise_pred_uncond)
         if self.guidance_rescale > 0:
             noise_pred = self.rescale_noise_cfg(noise_pred, noise_pred_text)
